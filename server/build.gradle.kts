@@ -35,14 +35,14 @@ dependencies {
     // Connection pooling ⚡
     implementation("com.zaxxer:HikariCP:5.1.0")
     
-    // Ktor plugins
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.7")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    // Ktor plugins (using version from libs catalog)
+    implementation("io.ktor:ktor-server-content-negotiation:3.0.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.3")
     
     // JWT Authentication 🔐
-    implementation("io.ktor:ktor-server-auth:2.3.7")
-    implementation("io.ktor:ktor-server-auth-jwt:2.3.7")
+    implementation("io.ktor:ktor-server-auth:3.0.3")
+    implementation("io.ktor:ktor-server-auth-jwt:3.0.3")
     
     // CORS support
-    implementation("io.ktor:ktor-server-cors:2.3.7")
+    implementation("io.ktor:ktor-server-cors:3.0.3")
 }

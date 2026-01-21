@@ -16,7 +16,24 @@ object JwtConfig {
     // Token hết hạn sau 7 ngày
     private const val VALIDITY_IN_MS = 7 * 24 * 60 * 60 * 1000L
 
-    fun generateToken(userId: String, userName: String, roomId: String): String {
+    /**
+     * Generate token không có roomId (dùng cho auth cơ bản)
+     */
+    fun generateToken(userId: String, userName: String): String {
+        return JWT.create()
+            .withSubject("Authentication")
+            .withIssuer(issuer)
+            .withAudience(audience)
+            .withClaim("userId", userId)
+            .withClaim("userName", userName)
+            .withExpiresAt(Date(System.currentTimeMillis() + VALIDITY_IN_MS))
+            .sign(algorithm)
+    }
+
+    /**
+     * Generate token với roomId (dùng khi user đang trong context của 1 room)
+     */
+    fun generateTokenWithRoom(userId: String, userName: String, roomId: String): String {
         return JWT.create()
             .withSubject("Authentication")
             .withIssuer(issuer)
@@ -41,9 +58,8 @@ object JwtConfig {
                 validate { credential ->
                     val userId = credential.payload.getClaim("userId").asString()
                     val userName = credential.payload.getClaim("userName").asString()
-                    val roomId = credential.payload.getClaim("roomId").asString()
                     
-                    if (userId != null && userName != null && roomId != null) {
+                    if (userId != null && userName != null) {
                         JWTPrincipal(credential.payload)
                     } else {
                         null
@@ -57,4 +73,4 @@ object JwtConfig {
 // Extension để lấy thông tin user từ JWT
 fun JWTPrincipal.getUserId(): String = payload.getClaim("userId").asString()
 fun JWTPrincipal.getUserName(): String = payload.getClaim("userName").asString()
-fun JWTPrincipal.getRoomId(): String = payload.getClaim("roomId").asString()
+fun JWTPrincipal.getRoomId(): String? = payload.getClaim("roomId")?.asString()

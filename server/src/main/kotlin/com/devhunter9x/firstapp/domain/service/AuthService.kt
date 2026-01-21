@@ -2,32 +2,24 @@ package com.devhunter9x.firstapp.domain.service
 
 import User
 import com.devhunter9x.firstapp.config.JwtConfig
-import com.devhunter9x.firstapp.domain.repository.RoomRepository
 import com.devhunter9x.firstapp.domain.repository.UserRepository
 import com.devhunter9x.firstapp.exception.InvalidCredentialsException
-import com.devhunter9x.firstapp.exception.RoomNotFoundException
 import com.devhunter9x.firstapp.exception.UserAlreadyExistsException
 import java.security.MessageDigest
 import java.util.UUID
 
 class AuthService(
-    private val userRepository: UserRepository,
-    private val roomRepository: RoomRepository
+    private val userRepository: UserRepository
 ) {
 
     /**
-     * Đăng ký user mới và join vào phòng
-     * @return JWT token
+     * Đăng ký user mới (không cần room)
      */
-    suspend fun register(name: String, roomCode: String, password: String): AuthResult {
-        // Tìm phòng theo mã
-        val room = roomRepository.findByCode(roomCode)
-            ?: throw RoomNotFoundException("Không tìm thấy phòng với mã '$roomCode'")
-
-        // Kiểm tra user đã tồn tại trong phòng chưa
-        val existingUser = userRepository.findByNameAndRoom(name, room.id)
+    suspend fun register(name: String, password: String): AuthResult {
+        // Kiểm tra user đã tồn tại chưa
+        val existingUser = userRepository.findByName(name)
         if (existingUser != null) {
-            throw UserAlreadyExistsException("Người dùng '$name' đã tồn tại trong phòng '$roomCode'")
+            throw UserAlreadyExistsException("Tên người dùng '$name' đã tồn tại")
         }
 
         // Tạo user mới
@@ -37,40 +29,35 @@ class AuthService(
         )
 
         val passwordHash = hashPassword(password)
-        userRepository.save(newUser, room.id, passwordHash)
+        userRepository.save(newUser, passwordHash)
 
-        // Tạo JWT token
-        val token = JwtConfig.generateToken(newUser.id, newUser.name, room.id)
+        // Tạo JWT token (không có roomId)
+        val token = JwtConfig.generateToken(newUser.id, newUser.name)
 
         return AuthResult(
             token = token,
-            user = newUser,
-            roomId = room.id,
-            roomCode = room.code
+            user = newUser
         )
     }
 
     /**
      * Đăng nhập với tên và mật khẩu
-     * @return JWT token
      */
-    suspend fun login(name: String, roomCode: String, password: String): AuthResult {
-        val room = roomRepository.findByCode(roomCode)
-            ?: throw RoomNotFoundException("Không tìm thấy phòng với mã '$roomCode'")
-
-        val user = userRepository.findByNameAndRoom(name, room.id)
+    suspend fun login(name: String, password: String): AuthResult {
+        val user = userRepository.findByName(name)
             ?: throw InvalidCredentialsException("Tên hoặc mật khẩu không đúng")
 
-        // TODO: Verify password (cần thêm field passwordHash vào UserRepository)
-        // Hiện tại tạm thời bỏ qua verify password
+        // Verify password
+        val storedHash = userRepository.getPasswordHash(user.id)
+        if (storedHash == null || storedHash != hashPassword(password)) {
+            throw InvalidCredentialsException("Tên hoặc mật khẩu không đúng")
+        }
         
-        val token = JwtConfig.generateToken(user.id, user.name, room.id)
+        val token = JwtConfig.generateToken(user.id, user.name)
 
         return AuthResult(
             token = token,
-            user = user,
-            roomId = room.id,
-            roomCode = room.code
+            user = user
         )
     }
 
@@ -82,7 +69,5 @@ class AuthService(
 
 data class AuthResult(
     val token: String,
-    val user: User,
-    val roomId: String,
-    val roomCode: String
+    val user: User
 )

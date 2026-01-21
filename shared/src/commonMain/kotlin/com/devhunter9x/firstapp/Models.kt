@@ -1,83 +1,50 @@
+package com.devhunter9x.firstapp
+
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Expense(
-    val id: String,
-    val roomId: String,         // ID phòng 🏠
-    val payerId: String,        // ID người trả tiền 👤
-    val amount: Double,         // Số tiền 💰
-    val description: String,    // Lý do chi tiêu 📝
-    val participantIds: List<String>, // Danh sách ID những người dùng chung 👥
-    val timestamp: String       // Thời gian chi ⏰
+        val id: String,
+        val roomId: String,
+        val payerId: String,
+        val amount: Double,
+        val description: String,
+        val participantAmounts:
+                Map<String, Double>, // userId -> amount (số tiền mỗi người phải trả)
+        val timestamp: String
 )
 
-@Serializable
-data class User(
-    val id: String,
-    val name: String
-)
+@Serializable data class User(val id: String, val name: String)
 
-@Serializable
-data class Room(
-    val id: String,
-    val code: String,   // Mã phòng để join (VD: "P101")
-    val name: String    // Tên phòng
-)
+@Serializable data class Room(val id: String, val code: String, val name: String)
 
-@Serializable
-data class Balance(
-    val fromUser: User,     // Người nợ
-    val toUser: User,       // Người được nhận
-    val amount: Double      // Số tiền nợ
-)
+@Serializable data class Balance(val fromUser: User, val toUser: User, val amount: Double)
 
 // ===== Request DTOs =====
 
-@Serializable
-data class CreateRoomRequest(
-    val name: String,
-    val code: String
-)
+@Serializable data class CreateRoomRequest(val name: String, val code: String)
 
-@Serializable
-data class JoinRoomRequest(
-    val name: String,
-    val password: String
-)
+@Serializable data class JoinRoomRequest(val roomCode: String)
 
-@Serializable
-data class LoginRequest(
-    val name: String,
-    val roomCode: String,
-    val password: String
-)
+@Serializable data class LoginRequest(val name: String, val password: String)
 
-@Serializable
-data class RegisterRequest(
-    val name: String,
-    val roomCode: String,
-    val password: String
-)
+@Serializable data class RegisterRequest(val name: String, val password: String)
 
 @Serializable
 data class CreateExpenseRequest(
-    val payerId: String,
-    val amount: Double,
-    val description: String,
-    val participantIds: List<String>
+        val payerId: String,
+        val amount: Double,
+        val description: String,
+        val participantAmounts: Map<String, Double>, // userId -> amount
+        val splitEqually: Boolean = true // true = chia đều, false = dùng participantAmounts
 )
 
 // ===== Response DTOs =====
 
-@Serializable
-data class AuthResponse(
-    val token: String,
-    val user: User,
-    val roomId: String,
-    val roomCode: String
-)
+@Serializable data class AuthResponse(val token: String, val user: User)
 
-@Serializable
-data class ErrorResponse(
-    val message: String
-)
+@Serializable data class JoinRoomResponse(val room: Room, val token: String)
+
+@Serializable data class RoomListResponse(val rooms: List<Room>)
+
+@Serializable data class ErrorResponse(val message: String)

@@ -1,9 +1,10 @@
 package com.devhunter9x.firstapp.routing
 
 import CreateExpenseRequest
-import com.devhunter9x.firstapp.config.getRoomId
+import com.devhunter9x.firstapp.config.getUserId
 import com.devhunter9x.firstapp.domain.service.ExpenseService
 import com.devhunter9x.firstapp.infrastructure.repository.ExpenseRepositoryImpl
+import com.devhunter9x.firstapp.infrastructure.repository.RoomMemberRepositoryImpl
 import com.devhunter9x.firstapp.infrastructure.repository.UserRepositoryImpl
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -11,10 +12,12 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlin.math.abs
 
 fun Route.expenseRoutes() {
     val expenseRepository = ExpenseRepositoryImpl()
     val userRepository = UserRepositoryImpl()
+    val roomMemberRepository = RoomMemberRepositoryImpl()
     val expenseService = ExpenseService(expenseRepository, userRepository)
 
     // Protected routes - yêu cầu JWT token
@@ -24,13 +27,20 @@ fun Route.expenseRoutes() {
             get {
                 try {
                     val principal = call.principal<JWTPrincipal>()!!
-                    val roomId = call.parameters["roomId"] 
-                        ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Thiếu roomId"))
-                    
-                    // Kiểm tra user có thuộc phòng này không
-                    val userRoomId = principal.getRoomId()
-                    if (userRoomId != roomId) {
-                        return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Bạn không có quyền truy cập phòng này"))
+                    val userId = principal.getUserId()
+                    val roomId =
+                            call.parameters["roomId"]
+                                    ?: return@get call.respond(
+                                            HttpStatusCode.BadRequest,
+                                            mapOf("error" to "Thiếu roomId")
+                                    )
+
+                    // Kiểm tra user có thuộc phòng này không (qua RoomMembersTable)
+                    if (!roomMemberRepository.isMember(userId, roomId)) {
+                        return@get call.respond(
+                                HttpStatusCode.Forbidden,
+                                mapOf("error" to "Bạn không phải thành viên của phòng này")
+                        )
                     }
 
                     val expenses = expenseService.getExpensesByRoom(roomId)
@@ -44,23 +54,48 @@ fun Route.expenseRoutes() {
             post {
                 try {
                     val principal = call.principal<JWTPrincipal>()!!
-                    val roomId = call.parameters["roomId"]
-                        ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Thiếu roomId"))
-                    
-                    val userRoomId = principal.getRoomId()
-                    if (userRoomId != roomId) {
-                        return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Bạn không có quyền truy cập phòng này"))
+                    val userId = principal.getUserId()
+                    val roomId =
+                            call.parameters["roomId"]
+                                    ?: return@post call.respond(
+                                            HttpStatusCode.BadRequest,
+                                            mapOf("error" to "Thiếu roomId")
+                                    )
+
+                    // Kiểm tra user có thuộc phòng này không
+                    if (!roomMemberRepository.isMember(userId, roomId)) {
+                        return@post call.respond(
+                                HttpStatusCode.Forbidden,
+                                mapOf("error" to "Bạn không phải thành viên của phòng này")
+                        )
                     }
 
                     val request = call.receive<CreateExpenseRequest>()
-                    val expense = expenseService.createExpense(
-                        roomId = roomId,
-                        payerId = request.payerId,
-                        amount = request.amount,
-                        description = request.description,
-                        participantIds = request.participantIds
-                    )
-                    
+
+                    // Validate: nếu không chia đều thì tổng amounts phải bằng tổng expense
+                    if (!request.splitEqually) {
+                        val totalParticipantAmounts = request.participantAmounts.values.sum()
+                        if (abs(totalParticipantAmounts - request.amount) > 0.01) {
+                            return@post call.respond(
+                                    HttpStatusCode.BadRequest,
+                                    mapOf(
+                                            "error" to
+                                                    "Tổng số tiền của các thành viên (${totalParticipantAmounts}) phải bằng tổng chi tiêu (${request.amount})"
+                                    )
+                            )
+                        }
+                    }
+
+                    val expense =
+                            expenseService.createExpense(
+                                    roomId = roomId,
+                                    payerId = request.payerId,
+                                    amount = request.amount,
+                                    description = request.description,
+                                    participantAmounts = request.participantAmounts,
+                                    splitEqually = request.splitEqually
+                            )
+
                     call.respond(HttpStatusCode.Created, expense)
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
@@ -72,12 +107,20 @@ fun Route.expenseRoutes() {
         get("/rooms/{roomId}/balances") {
             try {
                 val principal = call.principal<JWTPrincipal>()!!
-                val roomId = call.parameters["roomId"]
-                    ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Thiếu roomId"))
-                
-                val userRoomId = principal.getRoomId()
-                if (userRoomId != roomId) {
-                    return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Bạn không có quyền truy cập phòng này"))
+                val userId = principal.getUserId()
+                val roomId =
+                        call.parameters["roomId"]
+                                ?: return@get call.respond(
+                                        HttpStatusCode.BadRequest,
+                                        mapOf("error" to "Thiếu roomId")
+                                )
+
+                // Kiểm tra user có thuộc phòng này không
+                if (!roomMemberRepository.isMember(userId, roomId)) {
+                    return@get call.respond(
+                            HttpStatusCode.Forbidden,
+                            mapOf("error" to "Bạn không phải thành viên của phòng này")
+                    )
                 }
 
                 val balances = expenseService.calculateBalances(roomId)
@@ -91,17 +134,29 @@ fun Route.expenseRoutes() {
         get("/rooms/{roomId}/members") {
             try {
                 val principal = call.principal<JWTPrincipal>()!!
-                val roomId = call.parameters["roomId"]
-                    ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Thiếu roomId"))
-                
-                val userRoomId = principal.getRoomId()
-                if (userRoomId != roomId) {
-                    return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Bạn không có quyền truy cập phòng này"))
+                val userId = principal.getUserId()
+                val roomId =
+                        call.parameters["roomId"]
+                                ?: return@get call.respond(
+                                        HttpStatusCode.BadRequest,
+                                        mapOf("error" to "Thiếu roomId")
+                                )
+
+                println("DEBUG: Getting members for room=$roomId, user=$userId")
+
+                // Kiểm tra user có thuộc phòng này không - nếu chưa thì tự động thêm
+                if (!roomMemberRepository.isMember(userId, roomId)) {
+                    println("DEBUG: User $userId not in room $roomId, auto-adding...")
+                    roomMemberRepository.addMemberToRoom(userId, roomId)
                 }
 
-                val members = userRepository.findByRoomId(roomId)
+                // Lấy members qua RoomMembersTable
+                val members = roomMemberRepository.getMembersByRoomId(roomId)
+                println("DEBUG: Found ${members.size} members: ${members.map { it.name }}")
                 call.respond(members)
             } catch (e: Exception) {
+                println("DEBUG ERROR: ${e.message}")
+                e.printStackTrace()
                 call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message))
             }
         }

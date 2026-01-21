@@ -9,68 +9,76 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class ExpenseRepositoryImpl : ExpenseRepository {
-    
+
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+            newSuspendedTransaction(Dispatchers.IO) { block() }
 
     override suspend fun findByRoomId(roomId: String): List<Expense> = dbQuery {
         ExpensesTable.selectAll()
-            .where { ExpensesTable.roomId eq roomId }
-            .orderBy(ExpensesTable.createdAt, SortOrder.DESC)
-            .map { row ->
-                val expenseId = row[ExpensesTable.id]
-                val participantIds = getParticipantIdsSync(expenseId)
-                row.toExpense(participantIds)
-            }
+                .where { ExpensesTable.roomId eq roomId }
+                .orderBy(ExpensesTable.createdAt, SortOrder.DESC)
+                .map { row ->
+                    val expenseId = row[ExpensesTable.id]
+                    val participantAmounts = getParticipantAmountsSync(expenseId)
+                    row.toExpense(participantAmounts)
+                }
     }
 
     override suspend fun findById(id: String): Expense? = dbQuery {
         ExpensesTable.selectAll()
-            .where { ExpensesTable.id eq id }
-            .map { row ->
-                val participantIds = getParticipantIdsSync(row[ExpensesTable.id])
-                row.toExpense(participantIds)
-            }
-            .singleOrNull()
+                .where { ExpensesTable.id eq id }
+                .map { row ->
+                    val participantAmounts = getParticipantAmountsSync(row[ExpensesTable.id])
+                    row.toExpense(participantAmounts)
+                }
+                .singleOrNull()
     }
 
     override suspend fun create(expense: Expense): Boolean = dbQuery {
         ExpensesTable.insert {
-            it[id] = expense.id
-            it[roomId] = expense.roomId
-            it[payerId] = expense.payerId
-            it[amount] = expense.amount.toBigDecimal()
-            it[description] = expense.description
-        }.insertedCount > 0
+                    it[id] = expense.id
+                    it[roomId] = expense.roomId
+                    it[payerId] = expense.payerId
+                    it[amount] = expense.amount.toBigDecimal()
+                    it[description] = expense.description
+                }
+                .insertedCount > 0
     }
 
-    override suspend fun addParticipants(expenseId: String, userIds: List<String>): Boolean = dbQuery {
-        userIds.forEach { userId ->
+    override suspend fun addParticipants(
+            expenseId: String,
+            participantAmounts: Map<String, Double>
+    ): Boolean = dbQuery {
+        participantAmounts.forEach { (userId, amount) ->
             ExpenseParticipantsTable.insert {
                 it[ExpenseParticipantsTable.expenseId] = expenseId
                 it[ExpenseParticipantsTable.userId] = userId
+                it[ExpenseParticipantsTable.amount] = amount
             }
         }
         true
     }
 
-    override suspend fun getParticipantIds(expenseId: String): List<String> = dbQuery {
-        getParticipantIdsSync(expenseId)
+    override suspend fun getParticipantAmounts(expenseId: String): Map<String, Double> = dbQuery {
+        getParticipantAmountsSync(expenseId)
     }
 
-    private fun getParticipantIdsSync(expenseId: String): List<String> {
+    private fun getParticipantAmountsSync(expenseId: String): Map<String, Double> {
         return ExpenseParticipantsTable.selectAll()
-            .where { ExpenseParticipantsTable.expenseId eq expenseId }
-            .map { it[ExpenseParticipantsTable.userId] }
+                .where { ExpenseParticipantsTable.expenseId eq expenseId }
+                .associate {
+                    it[ExpenseParticipantsTable.userId] to it[ExpenseParticipantsTable.amount]
+                }
     }
 
-    private fun ResultRow.toExpense(participantIds: List<String>) = Expense(
-        id = this[ExpensesTable.id],
-        roomId = this[ExpensesTable.roomId],
-        payerId = this[ExpensesTable.payerId],
-        amount = this[ExpensesTable.amount].toDouble(),
-        description = this[ExpensesTable.description],
-        participantIds = participantIds,
-        timestamp = this[ExpensesTable.createdAt].toString()
-    )
+    private fun ResultRow.toExpense(participantAmounts: Map<String, Double>) =
+            Expense(
+                    id = this[ExpensesTable.id],
+                    roomId = this[ExpensesTable.roomId],
+                    payerId = this[ExpensesTable.payerId],
+                    amount = this[ExpensesTable.amount].toDouble(),
+                    description = this[ExpensesTable.description],
+                    participantAmounts = participantAmounts,
+                    timestamp = this[ExpensesTable.createdAt].toString()
+            )
 }
