@@ -1,9 +1,9 @@
 package com.devhunter9x.firstapp.routing
 
-import CreateRoomRequest
-import JoinRoomRequest
-import JoinRoomResponse
-import RoomListResponse
+import com.devhunter9x.firstapp.CreateRoomRequest
+import com.devhunter9x.firstapp.JoinRoomRequest
+import com.devhunter9x.firstapp.JoinRoomResponse
+import com.devhunter9x.firstapp.RoomListResponse
 import com.devhunter9x.firstapp.config.JwtConfig
 import com.devhunter9x.firstapp.config.getUserId
 import com.devhunter9x.firstapp.config.getUserName

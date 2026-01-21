@@ -3,13 +3,15 @@ package com.devhunter9x.firstapp
 import kotlinx.serialization.Serializable
 
 @Serializable
+
 data class PersonalExpense(
         val id: String,
         val amount: Double,
         val category: PersonalCategory,
         val note: String,
         val date: Long, // Timestamp
-        val type: TransactionType
+        val type: TransactionType,
+        val source: String? = null // Nguồn thu (chỉ dùng cho INCOME)
 )
 
 @Serializable
@@ -37,5 +39,6 @@ data class CreatePersonalExpenseRequest(
         val category: PersonalCategory,
         val note: String,
         val date: Long,
-        val type: TransactionType
+        val type: TransactionType,
+        val source: String? = null
 )

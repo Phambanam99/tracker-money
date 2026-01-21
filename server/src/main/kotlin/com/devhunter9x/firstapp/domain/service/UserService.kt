@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.domain.service
 
-import User
+import com.devhunter9x.firstapp.User
 import com.devhunter9x.firstapp.domain.repository.UserRepository
 
 class UserService(private val userRepository: UserRepository) {

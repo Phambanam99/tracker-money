@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.domain.repository
 
-import User
+import com.devhunter9x.firstapp.User
 
 interface UserRepository {
     suspend fun findByName(name: String): User?

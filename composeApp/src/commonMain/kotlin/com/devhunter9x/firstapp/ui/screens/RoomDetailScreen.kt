@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.devhunter9x.firstapp.*
 import com.devhunter9x.firstapp.api.ApiClient
-import com.devhunter9x.firstapp.util.formatNoDecimals
+import com.devhunter9x.firstapp.util.formatCurrency
 import com.devhunter9x.firstapp.util.formatTimestamp
 import kotlinx.coroutines.launch
 
@@ -322,7 +322,7 @@ private fun ExpenseCard(expense: Expense, memberMap: Map<String, User>) {
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                            text = "${expense.amount.formatNoDecimals()}đ",
+                            text = "${expense.amount.formatCurrency()}đ",
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.ExtraBold
@@ -382,7 +382,7 @@ private fun ExpenseCard(expense: Expense, memberMap: Map<String, User>) {
                                             else MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                    text = "${amount.formatNoDecimals()}đ",
+                                    text = "${amount.formatCurrency()}đ",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color =
@@ -515,7 +515,7 @@ private fun BalancesList(
                             }
 
                             Text(
-                                    text = "${balance.amount.formatNoDecimals()}đ",
+                                    text = "${balance.amount.formatCurrency()}đ",
                                     style = MaterialTheme.typography.titleLarge,
                                     color = MaterialTheme.colorScheme.error,
                                     fontWeight = FontWeight.ExtraBold
@@ -570,7 +570,7 @@ private fun BalancesList(
                 title = { Text("Confirm Payment") },
                 text = {
                     Text(
-                            "Confirm you've received ${settlingBalance!!.amount.formatNoDecimals()}đ from ${settlingBalance!!.fromUser.name}?"
+                            "Confirm you've received ${settlingBalance!!.amount.formatCurrency()}đ from ${settlingBalance!!.fromUser.name}?"
                     )
                 },
                 confirmButton = {

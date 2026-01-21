@@ -5,7 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -167,16 +171,37 @@ fun RoomListScreen(
                             EmptyState(onJoinRoom, onCreateRoom)
                         }
                         else -> {
-                            LazyColumn(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentPadding = PaddingValues(16.dp, 24.dp, 16.dp, 80.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                items(rooms) { room ->
-                                    RoomCard(
-                                            room = room,
-                                            onClick = { onRoomSelected(room.id, room.code) }
-                                    )
+                            BoxWithConstraints {
+                                if (maxWidth >= 600.dp) {
+                                    LazyVerticalGrid(
+                                            columns = GridCells.Adaptive(300.dp),
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentPadding =
+                                                    PaddingValues(16.dp, 24.dp, 16.dp, 80.dp),
+                                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        items(rooms) { room ->
+                                            RoomCard(
+                                                    room = room,
+                                                    onClick = { onRoomSelected(room.id, room.code) }
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    LazyColumn(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentPadding =
+                                                    PaddingValues(16.dp, 24.dp, 16.dp, 80.dp),
+                                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        items(rooms) { room ->
+                                            RoomCard(
+                                                    room = room,
+                                                    onClick = { onRoomSelected(room.id, room.code) }
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.domain.repository
 
-import Expense
+import com.devhunter9x.firstapp.Expense
 
 interface ExpenseRepository {
     suspend fun findByRoomId(roomId: String): List<Expense>

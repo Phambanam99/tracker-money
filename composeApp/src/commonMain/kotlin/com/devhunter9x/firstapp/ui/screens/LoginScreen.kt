@@ -52,7 +52,10 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
         ) {
                 Column(
-                        modifier = Modifier.fillMaxWidth(0.9f).padding(vertical = 32.dp),
+                        modifier =
+                                Modifier.widthIn(max = 600.dp)
+                                        .fillMaxWidth(0.9f)
+                                        .padding(vertical = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                         // Header Section

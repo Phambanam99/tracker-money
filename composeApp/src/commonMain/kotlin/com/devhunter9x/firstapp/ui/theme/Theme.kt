@@ -6,18 +6,19 @@ import androidx.compose.runtime.Composable
 
 private val DarkColorScheme =
         darkColorScheme(
-                primary = PrimaryAmber,
+                primary = Primary,
                 onPrimary = OnPrimary,
-                primaryContainer = PrimaryAmberVariant,
-                secondary = SurfaceSlateVariant,
-                onSecondary = OnSurface,
-                background = BackgroundSlate,
+                secondary = Secondary,
+                onSecondary = OnSecondary,
+                tertiary = Tertiary,
+                onTertiary = OnTertiary,
+                background = Background,
                 onBackground = OnBackground,
-                surface = SurfaceSlate,
+                surface = Surface,
                 onSurface = OnSurface,
-                surfaceVariant = SurfaceSlateVariant,
+                surfaceVariant = SurfaceVariant,
                 onSurfaceVariant = OnSurfaceVariant,
-                error = ErrorRed,
+                error = ErrorColor,
                 outline = OnSurfaceVariant.copy(alpha = 0.5f)
         )
 

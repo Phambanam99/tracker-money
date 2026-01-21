@@ -1,7 +1,7 @@
 package com.devhunter9x.firstapp.domain.service
 
-import Balance
-import Expense
+import com.devhunter9x.firstapp.Balance
+import com.devhunter9x.firstapp.Expense
 import com.devhunter9x.firstapp.domain.repository.ExpenseRepository
 import com.devhunter9x.firstapp.domain.repository.UserRepository
 import java.util.UUID

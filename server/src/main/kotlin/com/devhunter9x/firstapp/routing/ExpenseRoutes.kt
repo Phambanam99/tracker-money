@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.routing
 
-import CreateExpenseRequest
+import com.devhunter9x.firstapp.CreateExpenseRequest
 import com.devhunter9x.firstapp.config.getUserId
 import com.devhunter9x.firstapp.domain.service.ExpenseService
 import com.devhunter9x.firstapp.infrastructure.repository.ExpenseRepositoryImpl

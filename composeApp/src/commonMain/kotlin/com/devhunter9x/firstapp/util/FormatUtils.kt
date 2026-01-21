@@ -80,3 +80,22 @@ fun Long.formatDate(): String {
 
     return "${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}"
 }
+
+// Format tiền tệ có dấu phẩy ngăn cách (VD: 1,000,000)
+fun Double.formatCurrency(): String {
+    val longVal = this.toLong()
+    return longVal.toString().reversed().chunked(3).joinToString(",").reversed()
+}
+
+// Format chuỗi số input (VD: "1000000" -> "1,000,000")
+fun String.formatInputMoney(): String {
+    if (this.isBlank()) return ""
+    val digits = this.filter { it.isDigit() }
+    if (digits.isEmpty()) return ""
+    return digits.reversed().chunked(3).joinToString(",").reversed()
+}
+
+// Parse string formatted money back to Double
+fun String.parseMoney(): Double? {
+    return this.replace(",", "").toDoubleOrNull()
+}

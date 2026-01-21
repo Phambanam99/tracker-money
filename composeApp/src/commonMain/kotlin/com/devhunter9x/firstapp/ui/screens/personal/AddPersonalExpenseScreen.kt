@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -19,14 +20,16 @@ import com.devhunter9x.firstapp.CreatePersonalExpenseRequest
 import com.devhunter9x.firstapp.PersonalCategory
 import com.devhunter9x.firstapp.TransactionType
 import com.devhunter9x.firstapp.api.ApiClient
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun AddPersonalExpenseScreen(apiClient: ApiClient, onNavigateBack: () -> Unit) {
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var source by remember { mutableStateOf("") } // Nguồn thu
     var type by remember { mutableStateOf(TransactionType.EXPENSE) }
     var category by remember { mutableStateOf(PersonalCategory.OTHER) }
     var expanded by remember { mutableStateOf(false) } // For category dropdown
@@ -78,168 +81,221 @@ fun AddPersonalExpenseScreen(apiClient: ApiClient, onNavigateBack: () -> Unit) {
                     )
                 }
         ) { padding ->
-            Column(
-                    modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Type Segmented Control (Simple implementation using Row of Buttons)
-                Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TypeButton(
-                            text = "Expense",
-                            selected = type == TransactionType.EXPENSE,
-                            onClick = { type = TransactionType.EXPENSE },
-                            modifier = Modifier.weight(1f),
-                            color = Color(0xFFEF4444) // Red
-                    )
-                    TypeButton(
-                            text = "Income",
-                            selected = type == TransactionType.INCOME,
-                            onClick = { type = TransactionType.INCOME },
-                            modifier = Modifier.weight(1f),
-                            color = Color(0xFF10B981) // Green
-                    )
-                }
+            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(padding)) {
+                val isDesktop = maxWidth >= 600.dp
+                val contentModifier =
+                        if (isDesktop) {
+                            Modifier.width(500.dp)
+                                    .align(Alignment.Center)
+                                    .background(Color(0xFF1E293B), RoundedCornerShape(24.dp))
+                                    .padding(32.dp)
+                        } else {
+                            Modifier.fillMaxSize().padding(16.dp)
+                        }
 
-                // Amount
-                OutlinedTextField(
-                        value = amount,
-                        onValueChange = {
-                            if (it.all { char -> char.isDigit() || char == '.' }) amount = it
-                        },
-                        label = { Text("Amount") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        colors =
-                                OutlinedTextFieldDefaults.colors(
-                                        focusedTextColor = Color.White,
-                                        unfocusedTextColor = Color.White,
-                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
-                                )
-                )
-
-                // Category Dropdown
-                ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded },
-                        modifier = Modifier.fillMaxWidth()
+                Column(
+                        modifier = contentModifier,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    if (isDesktop) {
+                        Text(
+                                "Add Transaction",
+                                style =
+                                        MaterialTheme.typography.headlineSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                        ),
+                                modifier =
+                                        Modifier.padding(bottom = 16.dp)
+                                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
+
+                    // Type Segmented Control (Simple implementation using Row of Buttons)
+                    Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TypeButton(
+                                text = "Expense",
+                                selected = type == TransactionType.EXPENSE,
+                                onClick = { type = TransactionType.EXPENSE },
+                                modifier = Modifier.weight(1f),
+                                color = Color(0xFFEF4444) // Red
+                        )
+                        TypeButton(
+                                text = "Income",
+                                selected = type == TransactionType.INCOME,
+                                onClick = { type = TransactionType.INCOME },
+                                modifier = Modifier.weight(1f),
+                                color = Color(0xFF10B981) // Green
+                        )
+                    }
+
+                    // Amount
                     OutlinedTextField(
-                            value = category.name,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Category") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            value = amount,
+                            onValueChange = {
+                                if (it.all { char -> char.isDigit() || char == '.' }) amount = it
                             },
-                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            label = { Text("Amount") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors =
                                     OutlinedTextFieldDefaults.colors(
                                             focusedTextColor = Color.White,
                                             unfocusedTextColor = Color.White,
-                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                            focusedBorderColor = Color(0xFF7C3AED), // Violet 600
                                             unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                            focusedLabelColor = Color(0xFF7C3AED),
                                             unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
                                     )
                     )
-                    ExposedDropdownMenu(
+
+                    // Category Dropdown
+                    ExposedDropdownMenuBox(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            onExpandedChange = { expanded = !expanded },
+                            modifier = Modifier.fillMaxWidth()
                     ) {
-                        PersonalCategory.entries.forEach { selectionOption ->
-                            DropdownMenuItem(
-                                    text = { Text(selectionOption.name) },
-                                    onClick = {
-                                        category = selectionOption
-                                        expanded = false
-                                    }
-                            )
-                        }
-                    }
-                }
-
-                // Note
-                OutlinedTextField(
-                        value = note,
-                        onValueChange = { note = it },
-                        label = { Text("Note (Optional)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors =
-                                OutlinedTextFieldDefaults.colors(
-                                        focusedTextColor = Color.White,
-                                        unfocusedTextColor = Color.White,
-                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
-                                )
-                )
-
-                if (errorMessage != null) {
-                    Text(
-                            text = errorMessage!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Button(
-                        onClick = {
-                            val amountValue = amount.toDoubleOrNull()
-                            if (amountValue == null || amountValue <= 0) {
-                                errorMessage = "Please enter a valid amount"
-                                return@Button
-                            }
-
-                            scope.launch {
-                                isLoading = true
-                                errorMessage = null
-                                val request =
-                                        CreatePersonalExpenseRequest(
-                                                amount = amountValue,
-                                                category = category,
-                                                note = note,
-                                                date = Clock.System.now().toEpochMilliseconds(),
-                                                type = type
+                        OutlinedTextField(
+                                value = category.name,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Category") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                                },
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                colors =
+                                        OutlinedTextFieldDefaults.colors(
+                                                focusedTextColor = Color.White,
+                                                unfocusedTextColor = Color.White,
+                                                focusedBorderColor = Color(0xFF7C3AED),
+                                                unfocusedBorderColor =
+                                                        Color.White.copy(alpha = 0.5f),
+                                                focusedLabelColor = Color(0xFF7C3AED),
+                                                unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
                                         )
-                                val result = apiClient.createPersonalExpense(request)
-                                result.fold(
-                                        onSuccess = {
-                                            isLoading = false
-                                            onNavigateBack()
-                                        },
-                                        onFailure = {
-                                            isLoading = false
-                                            errorMessage = it.message
+                        )
+                        ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                        ) {
+                            PersonalCategory.entries.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                        text = { Text(selectionOption.name) },
+                                        onClick = {
+                                            category = selectionOption
+                                            expanded = false
                                         }
                                 )
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        enabled = !isLoading,
-                        shape = RoundedCornerShape(16.dp),
-                        colors =
-                                ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary
-                                )
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(24.dp)
+                        }
+                    }
+
+                    if (type == TransactionType.INCOME) {
+                        OutlinedTextField(
+                                value = source,
+                                onValueChange = { source = it },
+                                label = { Text("Source (e.g. Company, Client)") },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors =
+                                        OutlinedTextFieldDefaults.colors(
+                                                focusedTextColor = Color.White,
+                                                unfocusedTextColor = Color.White,
+                                                focusedBorderColor = Color(0xFF7C3AED),
+                                                unfocusedBorderColor =
+                                                        Color.White.copy(alpha = 0.5f),
+                                                focusedLabelColor = Color(0xFF7C3AED),
+                                                unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
+                                        )
                         )
-                    } else {
-                        Icon(Icons.Default.Check, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Save Transaction")
+                    }
+
+                    // Note
+                    OutlinedTextField(
+                            value = note,
+                            onValueChange = { note = it },
+                            label = { Text("Note (Optional)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =
+                                    OutlinedTextFieldDefaults.colors(
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White,
+                                            focusedBorderColor = Color(0xFF7C3AED),
+                                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                                            focusedLabelColor = Color(0xFF7C3AED),
+                                            unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
+                                    )
+                    )
+
+                    if (errorMessage != null) {
+                        Text(
+                                text = errorMessage!!,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
+                    if (!isDesktop) Spacer(modifier = Modifier.weight(1f))
+
+                    Button(
+                            onClick = {
+                                val amountValue = amount.toDoubleOrNull()
+                                if (amountValue == null || amountValue <= 0) {
+                                    errorMessage = "Please enter a valid amount"
+                                    return@Button
+                                }
+
+                                scope.launch {
+                                    isLoading = true
+                                    errorMessage = null
+                                    val request =
+                                            CreatePersonalExpenseRequest(
+                                                    amount = amountValue,
+                                                    category = category,
+                                                    note = note,
+                                                    date =
+                                                            kotlin.time.Clock.System.now()
+                                                                    .toEpochMilliseconds(),
+                                                    type = type,
+                                                    source =
+                                                            if (type == TransactionType.INCOME)
+                                                                    source
+                                                            else null
+                                            )
+                                    val result = apiClient.createPersonalExpense(request)
+                                    result.fold(
+                                            onSuccess = {
+                                                isLoading = false
+                                                onNavigateBack()
+                                            },
+                                            onFailure = {
+                                                isLoading = false
+                                                errorMessage = it.message
+                                            }
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            enabled = !isLoading,
+                            shape = RoundedCornerShape(16.dp),
+                            colors =
+                                    ButtonDefaults.buttonColors(
+                                            containerColor = Color(0xFF7C3AED) // Violet 600
+                                    )
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Save Transaction")
+                        }
                     }
                 }
             }

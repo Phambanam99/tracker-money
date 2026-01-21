@@ -12,6 +12,7 @@ object PersonalExpensesTable : Table("personal_expenses") {
     val note = text("note")
     val date = long("date") // Timestamp
     val type = varchar("type", 20) // INCOME/EXPENSE
+    val source_ = varchar("source", 100).nullable() // Nguồn thu
 
     override val primaryKey = PrimaryKey(id)
 }

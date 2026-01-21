@@ -2,6 +2,7 @@ package com.devhunter9x.firstapp.config
 
 import com.devhunter9x.firstapp.infrastructure.persistence.ExpenseParticipantsTable
 import com.devhunter9x.firstapp.infrastructure.persistence.ExpensesTable
+import com.devhunter9x.firstapp.infrastructure.persistence.PersonalExpensesTable
 import com.devhunter9x.firstapp.infrastructure.persistence.RoomMembersTable
 import com.devhunter9x.firstapp.infrastructure.persistence.RoomsTable
 import com.devhunter9x.firstapp.infrastructure.persistence.UsersTable
@@ -39,12 +40,13 @@ object DatabaseConfig {
 
         // Tự động tạo tất cả các bảng
         transaction {
-            SchemaUtils.create(
+            SchemaUtils.createMissingTablesAndColumns(
                     RoomsTable,
                     UsersTable,
                     RoomMembersTable, // Bảng liên kết user-room
                     ExpensesTable,
-                    ExpenseParticipantsTable
+                    ExpenseParticipantsTable,
+                    PersonalExpensesTable
             )
         }
     }

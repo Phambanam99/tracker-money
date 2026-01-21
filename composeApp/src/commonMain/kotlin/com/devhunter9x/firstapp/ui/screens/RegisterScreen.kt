@@ -53,7 +53,8 @@ fun RegisterScreen(
         ) {
                 Card(
                         modifier =
-                                Modifier.fillMaxWidth(0.85f)
+                                Modifier.widthIn(max = 600.dp)
+                                        .fillMaxWidth(0.85f)
                                         .border(
                                                 1.dp,
                                                 Brush.verticalGradient(

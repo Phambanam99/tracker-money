@@ -24,8 +24,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.devhunter9x.firstapp.*
 import com.devhunter9x.firstapp.api.ApiClient
+import com.devhunter9x.firstapp.util.formatCurrency
 import com.devhunter9x.firstapp.util.formatDate
-import com.devhunter9x.firstapp.util.formatNoDecimals
+import com.devhunter9x.firstapp.util.formatInputMoney
+import com.devhunter9x.firstapp.util.parseMoney
 import kotlin.collections.find
 import kotlin.collections.minus
 import kotlin.collections.plus
@@ -67,10 +69,10 @@ fun AddExpenseScreen(
 
     val totalParticipantAmounts =
             participantAmounts.filterKeys { selectedParticipants.contains(it) }.values.sumOf {
-                it.toDoubleOrNull() ?: 0.0
+                it.parseMoney() ?: 0.0
             }
 
-    val totalAmount = amount.toDoubleOrNull() ?: 0.0
+    val totalAmount = amount.parseMoney() ?: 0.0
     val isAmountValid =
             if (splitEqually) true else abs(totalParticipantAmounts - totalAmount) < 0.01
     val payerName = members.find { it.id == selectedPayerId }?.name ?: "Not selected"
@@ -156,7 +158,7 @@ fun AddExpenseScreen(
                         Column(modifier = Modifier.padding(20.dp)) {
                             OutlinedTextField(
                                     value = amount,
-                                    onValueChange = { amount = it.filter { c -> c.isDigit() } },
+                                    onValueChange = { amount = it.formatInputMoney() },
                                     label = { Text("Amount (VNĐ)") },
                                     singleLine = true,
                                     keyboardOptions =
@@ -354,7 +356,7 @@ fun AddExpenseScreen(
                                         if (isSelected && amount.isNotEmpty()) {
                                             val perPerson = totalAmount / selectedParticipants.size
                                             Text(
-                                                    "${perPerson.formatNoDecimals()}đ",
+                                                    "${perPerson.formatCurrency()}đ",
                                                     color = MaterialTheme.colorScheme.primary,
                                                     fontWeight = FontWeight.Bold
                                             )
@@ -368,9 +370,7 @@ fun AddExpenseScreen(
                                                         participantAmounts =
                                                                 participantAmounts +
                                                                         (member.id to
-                                                                                value.filter {
-                                                                                    it.isDigit()
-                                                                                })
+                                                                                value.formatInputMoney())
                                                     },
                                                     modifier = Modifier.weight(0.6f),
                                                     shape = RoundedCornerShape(12.dp),
@@ -426,18 +426,18 @@ fun AddExpenseScreen(
                                         )
                         ) {
                             Column(modifier = Modifier.padding(20.dp)) {
-                                SummaryRow("Total Expense", "${totalAmount.formatNoDecimals()}đ")
+                                SummaryRow("Total Expense", "${totalAmount.formatCurrency()}đ")
                                 SummaryRow("Payer", payerName)
                                 SummaryRow("Participants", "${selectedParticipants.size}")
 
                                 if (!splitEqually) {
                                     SummaryRow(
                                             "Entered Total",
-                                            "${totalParticipantAmounts.formatNoDecimals()}đ"
+                                            "${totalParticipantAmounts.formatCurrency()}đ"
                                     )
                                     if (!isAmountValid) {
                                         Text(
-                                                "⚠️ Total must be ${totalAmount.formatNoDecimals()}đ",
+                                                "⚠️ Total must be ${totalAmount.formatCurrency()}đ",
                                                 color = MaterialTheme.colorScheme.error,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontWeight = FontWeight.Bold,
@@ -465,7 +465,7 @@ fun AddExpenseScreen(
 
                     Button(
                             onClick = {
-                                val amountValue = amount.toDoubleOrNull() ?: 0.0
+                                val amountValue = amount.parseMoney() ?: 0.0
                                 val finalAmounts =
                                         if (splitEqually) {
                                             val perPerson = amountValue / selectedParticipants.size

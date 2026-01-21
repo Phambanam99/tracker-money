@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.infrastructure.repository
 
-import Expense
+import com.devhunter9x.firstapp.Expense
 import com.devhunter9x.firstapp.domain.repository.ExpenseRepository
 import com.devhunter9x.firstapp.infrastructure.persistence.ExpenseParticipantsTable
 import com.devhunter9x.firstapp.infrastructure.persistence.ExpensesTable

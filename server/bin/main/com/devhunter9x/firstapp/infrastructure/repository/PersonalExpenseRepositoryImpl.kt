@@ -7,6 +7,7 @@ import com.devhunter9x.firstapp.domain.repository.PersonalExpenseRepository
 import com.devhunter9x.firstapp.infrastructure.persistence.PersonalExpensesTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class PersonalExpenseRepositoryImpl : PersonalExpenseRepository {
@@ -30,6 +31,7 @@ class PersonalExpenseRepositoryImpl : PersonalExpenseRepository {
                     it[note] = expense.note
                     it[date] = expense.date
                     it[type] = expense.type.name
+                    it[source_] = expense.source
                 }
                 .insertedCount > 0
     }
@@ -45,6 +47,7 @@ class PersonalExpenseRepositoryImpl : PersonalExpenseRepository {
                     category = PersonalCategory.valueOf(this[PersonalExpensesTable.category]),
                     note = this[PersonalExpensesTable.note],
                     date = this[PersonalExpensesTable.date],
-                    type = TransactionType.valueOf(this[PersonalExpensesTable.type])
+                    type = TransactionType.valueOf(this[PersonalExpensesTable.type]),
+                    source = this[PersonalExpensesTable.source_]
             )
 }

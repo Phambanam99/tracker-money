@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.domain.repository
 
-import Room
+import com.devhunter9x.firstapp.Room
 
 interface RoomRepository {
     suspend fun findByCode(code: String): Room?

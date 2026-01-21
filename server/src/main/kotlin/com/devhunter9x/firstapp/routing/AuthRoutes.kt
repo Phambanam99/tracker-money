@@ -1,8 +1,8 @@
 package com.devhunter9x.firstapp.routing
 
-import LoginRequest
-import RegisterRequest
-import AuthResponse
+import com.devhunter9x.firstapp.AuthResponse
+import com.devhunter9x.firstapp.LoginRequest
+import com.devhunter9x.firstapp.RegisterRequest
 import com.devhunter9x.firstapp.domain.service.AuthService
 import com.devhunter9x.firstapp.exception.InvalidCredentialsException
 import com.devhunter9x.firstapp.exception.UserAlreadyExistsException
@@ -22,11 +22,11 @@ fun Route.authRoutes() {
             try {
                 val request = call.receive<RegisterRequest>()
                 val result = authService.register(request.name, request.password)
-                
-                call.respond(HttpStatusCode.Created, AuthResponse(
-                    token = result.token,
-                    user = result.user
-                ))
+
+                call.respond(
+                        HttpStatusCode.Created,
+                        AuthResponse(token = result.token, user = result.user)
+                )
             } catch (e: UserAlreadyExistsException) {
                 call.respond(HttpStatusCode.Conflict, mapOf("error" to e.message))
             } catch (e: Exception) {
@@ -39,11 +39,8 @@ fun Route.authRoutes() {
             try {
                 val request = call.receive<LoginRequest>()
                 val result = authService.login(request.name, request.password)
-                
-                call.respond(AuthResponse(
-                    token = result.token,
-                    user = result.user
-                ))
+
+                call.respond(AuthResponse(token = result.token, user = result.user))
             } catch (e: InvalidCredentialsException) {
                 call.respond(HttpStatusCode.Unauthorized, mapOf("error" to e.message))
             } catch (e: Exception) {

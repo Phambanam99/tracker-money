@@ -1,6 +1,6 @@
 package com.devhunter9x.firstapp.infrastructure.repository
 
-import User
+import com.devhunter9x.firstapp.User
 import com.devhunter9x.firstapp.domain.repository.UserRepository
 import com.devhunter9x.firstapp.infrastructure.persistence.RoomMembersTable
 import com.devhunter9x.firstapp.infrastructure.persistence.UsersTable
