@@ -21,7 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devhunter9x.firstapp.*
 import com.devhunter9x.firstapp.api.ApiClient
+import com.devhunter9x.firstapp.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LoginScreen(
@@ -35,6 +37,8 @@ fun LoginScreen(
         var errorMessage by remember { mutableStateOf<String?>(null) }
 
         val scope = rememberCoroutineScope()
+
+        val loginFailedMessage = stringResource(Res.string.login_failed)
 
         Box(
                 modifier =
@@ -69,7 +73,7 @@ fun LoginScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                                text = "TrackerMoney",
+                                text = stringResource(Res.string.app_name),
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -77,7 +81,7 @@ fun LoginScreen(
                         )
 
                         Text(
-                                text = "Smart Expense Management",
+                                text = stringResource(Res.string.app_slogan),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 4.dp)
@@ -96,7 +100,7 @@ fun LoginScreen(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                         Text(
-                                                text = "Đăng nhập",
+                                                text = stringResource(Res.string.login),
                                                 style = MaterialTheme.typography.titleLarge,
                                                 fontWeight = FontWeight.SemiBold,
                                                 textAlign = TextAlign.Start,
@@ -108,8 +112,17 @@ fun LoginScreen(
                                         OutlinedTextField(
                                                 value = name,
                                                 onValueChange = { name = it },
-                                                label = { Text("Tên đăng nhập") },
-                                                placeholder = { Text("username") },
+                                                label = {
+                                                        Text(stringResource(Res.string.username))
+                                                },
+                                                placeholder = {
+                                                        Text(
+                                                                stringResource(
+                                                                        Res.string
+                                                                                .username_placeholder
+                                                                )
+                                                        )
+                                                },
                                                 singleLine = true,
                                                 modifier = Modifier.fillMaxWidth(),
                                                 leadingIcon = {
@@ -126,7 +139,9 @@ fun LoginScreen(
                                         OutlinedTextField(
                                                 value = password,
                                                 onValueChange = { password = it },
-                                                label = { Text("Mật khẩu") },
+                                                label = {
+                                                        Text(stringResource(Res.string.password))
+                                                },
                                                 singleLine = true,
                                                 visualTransformation =
                                                         PasswordVisualTransformation(),
@@ -182,7 +197,7 @@ fun LoginScreen(
                                                                                 ->
                                                                                 errorMessage =
                                                                                         e.message
-                                                                                                ?: "Đăng nhập thất bại"
+                                                                                                ?: loginFailedMessage
                                                                         }
                                                                 )
                                                                 isLoading = false
@@ -214,7 +229,7 @@ fun LoginScreen(
                                                         )
                                                 } else {
                                                         Text(
-                                                                "Đăng nhập",
+                                                                stringResource(Res.string.login),
                                                                 style =
                                                                         MaterialTheme.typography
                                                                                 .titleMedium,
@@ -230,7 +245,7 @@ fun LoginScreen(
                                                 modifier = Modifier.fillMaxWidth()
                                         ) {
                                                 Text(
-                                                        "Chưa có tài khoản? Đăng ký ngay",
+                                                        stringResource(Res.string.no_account),
                                                         color = MaterialTheme.colorScheme.primary,
                                                         style = MaterialTheme.typography.bodyMedium
                                                 )

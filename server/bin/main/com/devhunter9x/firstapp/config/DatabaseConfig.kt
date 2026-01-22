@@ -20,9 +20,11 @@ object DatabaseConfig {
                     // Đọc từ environment variables, fallback về giá trị mặc định
                     jdbcUrl =
                             System.getenv("DB_URL")
-                                    ?: "jdbc:postgresql://localhost:5433/money_tracker"
+                                    ?: "jdbc:postgresql://localhost:5434/money_tracker"
                     username = System.getenv("DB_USER") ?: "postgres"
                     password = System.getenv("DB_PASSWORD") ?: "expense_tracker_2024"
+
+                    println("Connecting to database: $jdbcUrl as $username")
 
                     maximumPoolSize = 3
                     isAutoCommit = false

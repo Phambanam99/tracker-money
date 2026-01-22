@@ -20,12 +20,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.devhunter9x.firstapp.*
 import com.devhunter9x.firstapp.api.ApiClient
+import com.devhunter9x.firstapp.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RegisterScreen(
         apiClient: ApiClient,
-        onRegisterSuccess: () -> Unit,
+        onRegisterSuccess: (String) -> Unit,
         onNavigateBack: () -> Unit
 ) {
         var name by remember { mutableStateOf("") }
@@ -35,6 +37,9 @@ fun RegisterScreen(
         var errorMessage by remember { mutableStateOf<String?>(null) }
 
         val scope = rememberCoroutineScope()
+
+        val passwordsDontMatchMessage = stringResource(Res.string.passwords_dont_match)
+        val registrationFailedMessage = stringResource(Res.string.registration_failed)
 
         Box(
                 modifier =
@@ -77,7 +82,7 @@ fun RegisterScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                                 Text(
-                                        text = "Create Account",
+                                        text = stringResource(Res.string.create_account),
                                         style = MaterialTheme.typography.headlineMedium,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = MaterialTheme.colorScheme.primary
@@ -86,7 +91,7 @@ fun RegisterScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Text(
-                                        text = "Join the money tracker",
+                                        text = stringResource(Res.string.join_tracker),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -96,7 +101,7 @@ fun RegisterScreen(
                                 OutlinedTextField(
                                         value = name,
                                         onValueChange = { name = it },
-                                        label = { Text("Username") },
+                                        label = { Text(stringResource(Res.string.username)) },
                                         singleLine = true,
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(16.dp),
@@ -114,7 +119,7 @@ fun RegisterScreen(
                                 OutlinedTextField(
                                         value = password,
                                         onValueChange = { password = it },
-                                        label = { Text("Password") },
+                                        label = { Text(stringResource(Res.string.password)) },
                                         singleLine = true,
                                         visualTransformation = PasswordVisualTransformation(),
                                         keyboardOptions =
@@ -137,7 +142,9 @@ fun RegisterScreen(
                                 OutlinedTextField(
                                         value = confirmPassword,
                                         onValueChange = { confirmPassword = it },
-                                        label = { Text("Confirm Password") },
+                                        label = {
+                                                Text(stringResource(Res.string.confirm_password))
+                                        },
                                         singleLine = true,
                                         visualTransformation = PasswordVisualTransformation(),
                                         keyboardOptions =
@@ -173,7 +180,7 @@ fun RegisterScreen(
                                 Button(
                                         onClick = {
                                                 if (password != confirmPassword) {
-                                                        errorMessage = "Passwords do not match"
+                                                        errorMessage = passwordsDontMatchMessage
                                                         return@Button
                                                 }
                                                 scope.launch {
@@ -182,11 +189,15 @@ fun RegisterScreen(
                                                         val result =
                                                                 apiClient.register(name, password)
                                                         result.fold(
-                                                                onSuccess = { onRegisterSuccess() },
+                                                                onSuccess = { authResponse ->
+                                                                        onRegisterSuccess(
+                                                                                authResponse.user.id
+                                                                        )
+                                                                },
                                                                 onFailure = { e: Throwable ->
                                                                         errorMessage =
                                                                                 e.message
-                                                                                        ?: "Registration failed"
+                                                                                        ?: registrationFailedMessage
                                                                 }
                                                         )
                                                         isLoading = false
@@ -212,7 +223,7 @@ fun RegisterScreen(
                                                 )
                                         } else {
                                                 Text(
-                                                        "Register",
+                                                        stringResource(Res.string.register),
                                                         style =
                                                                 MaterialTheme.typography
                                                                         .titleMedium,
@@ -225,7 +236,7 @@ fun RegisterScreen(
 
                                 TextButton(onClick = onNavigateBack) {
                                         Text(
-                                                "Already have an account? Login",
+                                                stringResource(Res.string.already_have_account),
                                                 color = MaterialTheme.colorScheme.primary
                                         )
                                 }

@@ -13,7 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.devhunter9x.firstapp.api.ApiClient
+import com.devhunter9x.firstapp.generated.resources.*
 import com.devhunter9x.firstapp.ui.screens.personal.PersonalDashboardScreen
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MainScreen(
@@ -41,7 +43,13 @@ fun MainScreen(
                                                                                 "Groups"
                                                                 )
                                                         },
-                                                        label = { Text("Groups") },
+                                                        label = {
+                                                                Text(
+                                                                        stringResource(
+                                                                                Res.string.groups
+                                                                        )
+                                                                )
+                                                        },
                                                         selected = selectedTab == 0,
                                                         onClick = { selectedTab = 0 }
                                                 )
@@ -53,7 +61,13 @@ fun MainScreen(
                                                                                 "Personal"
                                                                 )
                                                         },
-                                                        label = { Text("Personal") },
+                                                        label = {
+                                                                Text(
+                                                                        stringResource(
+                                                                                Res.string.personal
+                                                                        )
+                                                                )
+                                                        },
                                                         selected = selectedTab == 1,
                                                         onClick = { selectedTab = 1 }
                                                 )
@@ -72,7 +86,13 @@ fun MainScreen(
                                                                                 "Groups"
                                                                 )
                                                         },
-                                                        label = { Text("Groups") },
+                                                        label = {
+                                                                Text(
+                                                                        stringResource(
+                                                                                Res.string.groups
+                                                                        )
+                                                                )
+                                                        },
                                                         selected = selectedTab == 0,
                                                         onClick = { selectedTab = 0 }
                                                 )
@@ -84,7 +104,13 @@ fun MainScreen(
                                                                                 "Personal"
                                                                 )
                                                         },
-                                                        label = { Text("Personal") },
+                                                        label = {
+                                                                Text(
+                                                                        stringResource(
+                                                                                Res.string.personal
+                                                                        )
+                                                                )
+                                                        },
                                                         selected = selectedTab == 1,
                                                         onClick = { selectedTab = 1 }
                                                 )

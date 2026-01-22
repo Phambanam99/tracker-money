@@ -9,7 +9,7 @@ services:
       # Cho phép kết nối không cần password (chỉ dùng cho development)
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

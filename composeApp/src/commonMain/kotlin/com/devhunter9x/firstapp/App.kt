@@ -47,9 +47,10 @@ fun App() {
                 composable<RegisterRoute> {
                     RegisterScreen(
                             apiClient = apiClient,
-                            onRegisterSuccess = {
-                                // Sau khi register, đi đến danh sách phòng
-                                navController.navigate(RoomListRoute) {
+                            onRegisterSuccess = { userId ->
+                                currentUserId = userId
+                                // Sau khi register, đi đến MainScreen
+                                navController.navigate(MainRoute) {
                                     popUpTo(LoginRoute) { inclusive = true }
                                 }
                             },
@@ -96,7 +97,7 @@ fun App() {
                             apiClient = apiClient,
                             onJoinSuccess = { roomId, roomCode ->
                                 navController.navigate(RoomDetailRoute(roomId, roomCode)) {
-                                    popUpTo(RoomListRoute)
+                                    popUpTo(MainRoute)
                                 }
                             },
                             onNavigateBack = { navController.popBackStack() }

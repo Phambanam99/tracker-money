@@ -131,3 +131,8 @@ compose.desktop {
         }
     }
 }
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.devhunter9x.firstapp.generated.resources"
+}
